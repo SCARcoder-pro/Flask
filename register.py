@@ -35,3 +35,48 @@ def register():
 
         return redirect(url_for('success')) 
     return render_template('register.html')
+
+@app.route("/login", methods = ['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = sqlite3.connect('users.db')
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+        user = cur.fetchone()
+        conn.close()
+
+        if user:
+            return redirect(url_for('dashboard'))
+        else:
+            return "Invalid username or password"
+        
+    return render_template('login.html')
+@app.route("/dashboard")
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route("/resume", methods=["GET", "POST"])
+def resume():
+    fullname = request.form["fullname"]
+    address = request.form["address"]
+    email = request.form["email"]
+    mobile = request.form["mobile"]
+    skills = request.form["skills"]
+
+    image = request.files["image"]
+    image_path = "static/ + image.filename"
+    image.save(image_path)
+
+    return render_template("resume.html",
+                           fullname=fullname,
+                           address=address,
+                           email=email,
+                           mobile=mobile,
+                           skills=skills,
+                           image_path=image_path)
+
+if __name__ == "__main__":
+    app.run(debug=True)
